@@ -22,7 +22,7 @@ export default function Home() {
               className="text-white text-2xl font-semibold py-7 px-9"
               size="lg"
             >
-              <Link href="/signup">Get Started</Link>
+              <Link href="/login">Get Started</Link>
             </Button>
             <Button
               asChild
@@ -30,7 +30,7 @@ export default function Home() {
               className="font-semibold text-2xl py-7 px-9"
               size="lg"
             >
-              <Link href="/signup">See Articles</Link>
+              <Link href="/articles">See Articles</Link>
             </Button>
           </div>
         </div>
