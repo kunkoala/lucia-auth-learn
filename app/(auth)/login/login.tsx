@@ -5,6 +5,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { APP_TITLE } from "@/lib/constants";
+import { IconBrandGoogle } from "@tabler/icons-react";
+import { GitHubLogoIcon } from "@radix-ui/react-icons";
 
 export function Login() {
   return (
@@ -17,7 +20,7 @@ export function Login() {
           <div className="grid gap-2 text-center">
             <Link href="/">
               <p className="py-4 text-4xl font-extrabold z-20 bg-clip-text text-transparent bg-gradient-to-b from-primary to-neutral-500">
-                Writable
+                {APP_TITLE}
               </p>
             </Link>
             <h1 className="text-3xl font-bold">Login</h1>
@@ -60,10 +63,10 @@ export function Login() {
             </div>
             <div className="flex items-center gap-3">
               <Button variant="outline" className="w-full">
-                Google
+                <IconBrandGoogle />
               </Button>
               <Button variant="outline" className="w-full">
-                Github
+                <GitHubLogoIcon className="w-fit h-fit" />
               </Button>
             </div>
           </div>

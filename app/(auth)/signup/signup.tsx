@@ -5,6 +5,9 @@ import { ThemeToggle } from "@/components/theme-toggle";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { APP_TITLE } from "@/lib/constants";
+import { IconBrandGoogle } from "@tabler/icons-react";
+import { GitHubLogoIcon } from "@radix-ui/react-icons";
 export function SignUp() {
   return (
     <div className="w-full lg:grid min-h-[600px] lg:min-h-screen lg:grid-cols-2">
@@ -16,7 +19,7 @@ export function SignUp() {
           <div className="grid gap-2 text-center">
             <Link href="/">
               <p className="py-4 text-4xl font-extrabold z-20 bg-clip-text text-transparent bg-gradient-to-b from-primary to-neutral-500">
-                Writicle
+                {APP_TITLE}
               </p>
             </Link>
             <h1 className="text-3xl font-bold">Sign Up</h1>
@@ -29,11 +32,11 @@ export function SignUp() {
             <div className="grid grid-cols-2 gap-4">
               <div className="grid gap-2">
                 <Label htmlFor="first-name">First name</Label>
-                <Input id="first-name" placeholder="Max" required />
+                <Input id="first-name" placeholder="Nicole" required />
               </div>
               <div className="grid gap-2">
                 <Label htmlFor="last-name">Last name</Label>
-                <Input id="last-name" placeholder="Robinson" required />
+                <Input id="last-name" placeholder="Beatrice" required />
               </div>
             </div>
             <div className="grid gap-2">
@@ -49,7 +52,7 @@ export function SignUp() {
               <div className="flex items-center">
                 <Label htmlFor="password">Password</Label>
               </div>
-              <Input id="password" type="password" required />
+              <Input id="password" type="password" placeholder="********" required />
             </div>
             <Button type="submit" className="w-full">
               Sign Up
@@ -63,10 +66,10 @@ export function SignUp() {
             </div>
             <div className="flex items-center gap-3">
               <Button variant="outline" className="w-full">
-                Google
+                <IconBrandGoogle/>
               </Button>
               <Button variant="outline" className="w-full">
-                Github
+                <GitHubLogoIcon className="w-fit h-fit"/>
               </Button>
             </div>
           </div>

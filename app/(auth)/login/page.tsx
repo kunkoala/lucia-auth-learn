@@ -1,12 +1,9 @@
-import Image from "next/image";
-import Link from "next/link";
 import { Login } from "./login";
+import { validateRequest } from "@/lib/auth/validate-request";
+import { redirect } from "next/navigation";
 
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { ThemeToggle } from "@/components/theme-toggle";
-
-export default function LoginPage() {
+export default async function LoginPage() {
+  const { user } = await validateRequest();
+  if (user) redirect("/dashboard");
   return <Login />;
 }
