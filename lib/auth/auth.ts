@@ -15,9 +15,12 @@ export const lucia = new Lucia(adapter, {
       secure: process.env.NODE_ENV === "production",
     },
   },
+  // here we get the user attributes based on the DatabaseUserAttributes interface
   getUserAttributes: (attributes) => {
     return {
-      username: attributes.username,
+      email: attributes.email,
+      firstName: attributes.firstName,
+      lastName: attributes.lastName,
     };
   },
 });
@@ -30,6 +33,11 @@ declare module "lucia" {
   }
 }
 
+// here we define the user attributes that we want to get from the database
+// see the prisma schema for the user model
+// TODO: Refactor all the user attributes to another file
 interface DatabaseUserAttributes {
-  username: string;
+  firstName: string;
+  lastName: string;
+  email: string;
 }

@@ -1,6 +1,9 @@
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { useFormState } from "react-dom";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,7 +11,13 @@ import { Label } from "@/components/ui/label";
 import { APP_TITLE } from "@/lib/constants";
 import { IconBrandGoogle } from "@tabler/icons-react";
 import { GitHubLogoIcon } from "@radix-ui/react-icons";
+import { PasswordInput } from "@/components/password-input";
+import { signup } from "@/lib/auth/actions";
+import { SubmitButton } from "@/components/submit-button";
+
 export function SignUp() {
+  const [state, formData] = useFormState(signup, null);
+
   return (
     <div className="w-full lg:grid min-h-[600px] lg:min-h-screen lg:grid-cols-2">
       <div className="absolute top-2 left-2">
@@ -28,35 +37,46 @@ export function SignUp() {
             </p>
           </div>
 
-          <div className="grid gap-4 p-4 md:p-2">
+          <form action={formData} className="grid gap-4 p-4 md:p-2">
             <div className="grid grid-cols-2 gap-4">
               <div className="grid gap-2">
                 <Label htmlFor="first-name">First name</Label>
-                <Input id="first-name" placeholder="Nicole" required />
+                <Input name="first-name" placeholder="Nicole" required />
               </div>
               <div className="grid gap-2">
                 <Label htmlFor="last-name">Last name</Label>
-                <Input id="last-name" placeholder="Beatrice" required />
+                <Input name="last-name" placeholder="Beatrice" required />
               </div>
             </div>
             <div className="grid gap-2">
               <Label htmlFor="email">Email</Label>
               <Input
-                id="email"
                 type="email"
+                autoComplete="email"
+                name="email"
                 placeholder="nicole@example.com"
                 required
               />
             </div>
             <div className="grid gap-2">
-              <div className="flex items-center">
-                <Label htmlFor="password">Password</Label>
-              </div>
-              <Input id="password" type="password" placeholder="********" required />
+              <Label htmlFor="password">Password</Label>
+              <PasswordInput
+                name="password"
+                autoComplete="current-password"
+                placeholder="********"
+                required
+              />
             </div>
-            <Button type="submit" className="w-full">
+            {state?.error && (
+              <p className="rounded-lg border bg-destructive/10 p-2 text-[0.8rem] font-medium text-destructive">
+                {state?.error}
+              </p>
+            )}
+            <SubmitButton type="submit" className="w-full">
               Sign Up
-            </Button>
+            </SubmitButton>
+          </form>
+          <div className="grid gap-4 p-4 md:p-2">
             <div className="flex items-center pt-2">
               <div className="flex-grow border-t-2"></div>
               <span className="text-muted-foreground mx-4 text-sm">
@@ -66,10 +86,10 @@ export function SignUp() {
             </div>
             <div className="flex items-center gap-3">
               <Button variant="outline" className="w-full">
-                <IconBrandGoogle/>
+                <IconBrandGoogle />
               </Button>
               <Button variant="outline" className="w-full">
-                <GitHubLogoIcon className="w-fit h-fit"/>
+                <GitHubLogoIcon className="w-fit h-fit" />
               </Button>
             </div>
           </div>

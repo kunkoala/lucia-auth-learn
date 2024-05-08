@@ -1,8 +1,8 @@
 "use server";
 
-import { hash, verify } from "@node-rs/argon2";
 import { cookies } from "next/headers";
 import { lucia } from "@/lib/auth/auth";
+import { Scrypt } from "lucia";
 import { redirect } from "next/navigation";
 import { generateIdFromEntropySize } from "lucia";
 import { PrismaClient } from "@prisma/client";
@@ -17,6 +17,28 @@ export async function signup(
   _: any,
   formData: FormData
 ): Promise<ActionResult> {
+  const firstName = formData.get("first-name");
+  if (
+    typeof firstName !== "string" ||
+    firstName.length < 1 ||
+    firstName.length > 255
+  ) {
+    return {
+      error: "Invalid first name",
+    };
+  }
+
+  const lastName = formData.get("last-name");
+  if (
+    typeof lastName !== "string" ||
+    lastName.length < 1 ||
+    lastName.length > 255
+  ) {
+    return {
+      error: "Invalid last name",
+    };
+  }
+
   const email = formData.get("email");
   if (typeof email !== "string" || email.length < 6 || email.length > 255) {
     return {
@@ -49,12 +71,7 @@ export async function signup(
   }
 
   const userId = generateIdFromEntropySize(21);
-  const hashedPassword = await hash(password, {
-    memoryCost: 19456,
-    timeCost: 2,
-    outputLen: 32,
-    parallelism: 1,
-  });
+  const hashedPassword = await new Scrypt().hash(password);
 
   await prisma.user.create({
     data: {
@@ -107,12 +124,10 @@ export async function login(_: any, formData: FormData): Promise<ActionResult> {
     };
   }
 
-  const passwordMatch = await verify(existingUser.password_hash, password, {
-    memoryCost: 19456,
-    timeCost: 2,
-    outputLen: 32,
-    parallelism: 1,
-  });
+  const passwordMatch = await new Scrypt().verify(
+    existingUser.password_hash,
+    password
+  );
   if (!passwordMatch) {
     return {
       error: "Incorrect Username or Password",

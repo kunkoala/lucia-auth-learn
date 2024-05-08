@@ -8,6 +8,7 @@ import { ThemeToggle } from "@/components/theme-toggle";
 import { APP_TITLE } from "@/lib/constants";
 import { IconBrandGoogle } from "@tabler/icons-react";
 import { GitHubLogoIcon } from "@radix-ui/react-icons";
+import { PasswordInput } from "@/components/password-input";
 
 export function Login() {
   return (
@@ -49,7 +50,12 @@ export function Login() {
                   Forgot your password?
                 </Link>
               </div>
-              <Input id="password" type="password" required />
+              <PasswordInput
+                id="password"
+                type="password"
+                placeholder="********"
+                required
+              />
             </div>
             <Button type="submit" className="w-full">
               Login
@@ -72,7 +78,7 @@ export function Login() {
           </div>
           <div className="mt-4 text-center text-sm">
             Don&apos;t have an account?{" "}
-            <Link href="/signup" className="underline">
+            <Link href="/signup" className="underline hover:text-primary">
               Sign up
             </Link>
           </div>
