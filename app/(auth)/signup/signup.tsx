@@ -38,15 +38,9 @@ export function SignUp() {
           </div>
 
           <form action={formData} className="grid gap-4 p-4 md:p-2">
-            <div className="grid grid-cols-2 gap-4">
-              <div className="grid gap-2">
-                <Label htmlFor="first-name">First name</Label>
-                <Input name="first-name" placeholder="Nicole" required />
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="last-name">Last name</Label>
-                <Input name="last-name" placeholder="Beatrice" required />
-              </div>
+            <div className="grid gap-2">
+              <Label htmlFor="username">Username</Label>
+              <Input name="username" placeholder="azhar28" required />
             </div>
             <div className="grid gap-2">
               <Label htmlFor="email">Email</Label>
@@ -67,11 +61,21 @@ export function SignUp() {
                 required
               />
             </div>
-            {state?.error && (
+
+            {state?.fieldError ? (
+              <ul className="list-disc space-y-1 rounded-lg border bg-destructive/10 p-2 text-[0.8rem] font-medium text-destructive">
+                {Object.values(state.fieldError).map((err) => (
+                  <li className="ml-4 list-none" key={err}>
+                    {err}
+                  </li>
+                ))}
+              </ul>
+            ) : state?.formError ? (
               <p className="rounded-lg border bg-destructive/10 p-2 text-[0.8rem] font-medium text-destructive">
-                {state?.error}
+                {state?.formError}
               </p>
-            )}
+            ) : null}
+
             <SubmitButton type="submit" className="w-full">
               Sign Up
             </SubmitButton>

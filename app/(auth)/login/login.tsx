@@ -1,5 +1,8 @@
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
+import { useFormState } from "react-dom";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,8 +12,12 @@ import { APP_TITLE } from "@/lib/constants";
 import { IconBrandGoogle } from "@tabler/icons-react";
 import { GitHubLogoIcon } from "@radix-ui/react-icons";
 import { PasswordInput } from "@/components/password-input";
+import { SubmitButton } from "@/components/submit-button";
+import { login } from "@/lib/auth/actions";
 
 export function Login() {
+  const [state, formAction] = useFormState(login, null);
+
   return (
     <div className="w-full lg:grid min-h-[600px] lg:min-h-screen lg:grid-cols-2">
       <div className="absolute top-2 left-2">
@@ -30,13 +37,14 @@ export function Login() {
             </p>
           </div>
 
-          <div className="grid gap-4 p-4 md:p-2">
+          <form action={formAction} className="grid gap-4 p-4 md:p-2">
             <div className="grid gap-2">
               <Label htmlFor="email">Email</Label>
               <Input
-                id="email"
+                name="email"
                 type="email"
                 placeholder="nicole@example.com"
+                autoComplete="email"
                 required
               />
             </div>
@@ -51,30 +59,45 @@ export function Login() {
                 </Link>
               </div>
               <PasswordInput
-                id="password"
-                type="password"
+                name="password"
                 placeholder="********"
+                autoComplete="current-password"
                 required
               />
             </div>
-            <Button type="submit" className="w-full">
+
+            {state?.fieldError ? (
+              <ul className="list-disc space-y-1 rounded-lg border bg-destructive/10 p-2 text-[0.8rem] font-medium text-destructive">
+                {Object.values(state.fieldError).map((err) => (
+                  <li className="ml-4 list-none" key={err}>
+                    {err}
+                  </li>
+                ))}
+              </ul>
+            ) : state?.formError ? (
+              <p className="rounded-lg border bg-destructive/10 p-2 text-[0.8rem] font-medium text-destructive">
+                {state?.formError}
+              </p>
+            ) : null}
+
+            <SubmitButton type="submit" className="w-full">
               Login
+            </SubmitButton>
+          </form>
+          <div className="flex items-center pt-2">
+            <div className="flex-grow border-t-2"></div>
+            <span className="text-muted-foreground mx-4 text-sm">
+              or continue with
+            </span>
+            <div className="flex-grow border-t-2"></div>
+          </div>
+          <div className="flex items-center gap-3">
+            <Button variant="outline" className="w-full">
+              <IconBrandGoogle />
             </Button>
-            <div className="flex items-center pt-2">
-              <div className="flex-grow border-t-2"></div>
-              <span className="text-muted-foreground mx-4 text-sm">
-                or continue with
-              </span>
-              <div className="flex-grow border-t-2"></div>
-            </div>
-            <div className="flex items-center gap-3">
-              <Button variant="outline" className="w-full">
-                <IconBrandGoogle />
-              </Button>
-              <Button variant="outline" className="w-full">
-                <GitHubLogoIcon className="w-fit h-fit" />
-              </Button>
-            </div>
+            <Button variant="outline" className="w-full">
+              <GitHubLogoIcon className="w-fit h-fit" />
+            </Button>
           </div>
           <div className="mt-4 text-center text-sm">
             Don&apos;t have an account?{" "}

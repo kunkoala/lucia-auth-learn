@@ -64,7 +64,7 @@ export const Header = () => {
 
         <div className="flex gap-3 ml-auto">
           <Button asChild variant="secondary">
-            <Link href="/login">Login</Link>
+            <Link href="/login">Get Started</Link>
           </Button>
           <ThemeToggle />
         </div>

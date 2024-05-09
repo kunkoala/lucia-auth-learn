@@ -6,5 +6,5 @@ export default async function Dashboard() {
   if (!user) {
     return redirect("/login");
   }
-  return <h1>Hi!, {user.email}!</h1>;
+  return <h1>Hi!, @{user.username}!</h1>;
 }

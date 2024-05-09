@@ -2,6 +2,7 @@ import Link from "next/link";
 import { RocketIcon } from "@/components/icons";
 import { APP_TITLE } from "@/lib/constants";
 import { validateRequest } from "@/lib/auth/validate-request";
+import { UserDropdown } from "@/app/(main)/_components/user-dropdown";
 
 export const Header = async () => {
   const { user } = await validateRequest();
@@ -15,8 +16,12 @@ export const Header = async () => {
         >
           <RocketIcon className="mr-2 h-5 w-5" /> {APP_TITLE} Dashboard
         </Link>
-        <h1>Hello, {user?.username}</h1>
-        <h1>{user?.email}</h1>
+        {user ? (
+          <UserDropdown
+            email={user.email}
+            className="ml-auto"
+          />
+        ) : null}
       </div>
     </header>
   );
