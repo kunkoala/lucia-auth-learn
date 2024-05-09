@@ -1,61 +1,43 @@
 "use server";
 
 import { cookies } from "next/headers";
-import { lucia } from "@/lib/auth/auth";
+import { lucia } from "@/lib/auth/index";
 import { Scrypt } from "lucia";
 import { redirect } from "next/navigation";
-import { generateIdFromEntropySize } from "lucia";
+import { generateIdFromEntropySize, type User } from "lucia";
+import { generateRandomString, alphabet } from "oslo/crypto";
 import { PrismaClient } from "@prisma/client";
+import { signupSchema, loginSchema } from "@/lib/validators/auth";
+import type { SignupInput, LoginInput } from "@/lib/validators/auth";
+import { validateRequest } from "./validate-request";
+import { TimeSpan, createDate, isWithinExpirationDate } from "oslo";
 
 const prisma = new PrismaClient();
 
-interface ActionResult {
-  error: string;
+interface ActionResult<T> {
+  fieldError?: Partial<Record<keyof T, string | undefined>>;
+  formError?: string;
 }
 
 export async function signup(
   _: any,
   formData: FormData
-): Promise<ActionResult> {
-  const firstName = formData.get("first-name");
-  if (
-    typeof firstName !== "string" ||
-    firstName.length < 1 ||
-    firstName.length > 255
-  ) {
+): Promise<ActionResult<SignupInput>> {
+  const obj = Object.fromEntries(formData.entries());
+
+  const parsed = signupSchema.safeParse(obj);
+  if (!parsed.success) {
+    const err = parsed.error.flatten();
     return {
-      error: "Invalid first name",
+      fieldError: {
+        username: err.fieldErrors.username?.[0],
+        email: err.fieldErrors.email?.[0],
+        password: err.fieldErrors.password?.[0],
+      },
     };
   }
 
-  const lastName = formData.get("last-name");
-  if (
-    typeof lastName !== "string" ||
-    lastName.length < 1 ||
-    lastName.length > 255
-  ) {
-    return {
-      error: "Invalid last name",
-    };
-  }
-
-  const email = formData.get("email");
-  if (typeof email !== "string" || email.length < 6 || email.length > 255) {
-    return {
-      error: "Invalid email",
-    };
-  }
-
-  const password = formData.get("password");
-  if (
-    typeof password !== "string" ||
-    password.length < 6 ||
-    password.length > 255
-  ) {
-    return {
-      error: "Invalid password",
-    };
-  }
+  const { username, email, password } = parsed.data;
 
   // TODO: Check if user already exists
   const existingUser = await prisma.user.findUnique({
@@ -66,7 +48,8 @@ export async function signup(
 
   if (existingUser) {
     return {
-      error: "User already exists",
+      formError:
+        "User already exists. Cannot create a new account with this email.",
     };
   }
 
@@ -76,6 +59,7 @@ export async function signup(
   await prisma.user.create({
     data: {
       id: userId,
+      username: username,
       email: email,
       password_hash: hashedPassword,
     },
@@ -91,26 +75,28 @@ export async function signup(
     sessionCookie.attributes
   );
 
-  return redirect("/");
+  return redirect("/dashboard");
 }
 
-export async function login(_: any, formData: FormData): Promise<ActionResult> {
-  const email = formData.get("email");
-  if (typeof email !== "string" || email.length < 6 || email.length > 255) {
+// action to use in form submission to login
+export async function login(
+  _: any,
+  formData: FormData
+): Promise<ActionResult<LoginInput>> {
+  const obj = Object.fromEntries(formData.entries());
+
+  const parsed = loginSchema.safeParse(obj);
+  if (!parsed.success) {
+    const err = parsed.error.flatten();
     return {
-      error: "Invalid email",
+      fieldError: {
+        email: err.fieldErrors.email?.[0],
+        password: err.fieldErrors.password?.[0],
+      },
     };
   }
-  const password = formData.get("password");
-  if (
-    typeof password !== "string" ||
-    password.length < 6 ||
-    password.length > 255
-  ) {
-    return {
-      error: "Invalid password",
-    };
-  }
+
+  const { email, password } = parsed.data;
 
   const existingUser = await prisma.user.findUnique({
     where: {
@@ -120,7 +106,12 @@ export async function login(_: any, formData: FormData): Promise<ActionResult> {
 
   if (!existingUser) {
     return {
-      error: "Incorrect Username or Password",
+      formError: "Incorrect email or Password",
+    };
+  }
+  if (!existingUser || !existingUser?.password_hash) {
+    return {
+      formError: "Incorrect email or password",
     };
   }
 
@@ -130,7 +121,7 @@ export async function login(_: any, formData: FormData): Promise<ActionResult> {
   );
   if (!passwordMatch) {
     return {
-      error: "Incorrect Username or Password",
+      formError: "Incorrect Username or Password",
     };
   }
 
@@ -142,4 +133,119 @@ export async function login(_: any, formData: FormData): Promise<ActionResult> {
     sessionCookie.attributes
   );
   return redirect("/dashboard");
+}
+
+// action to use in form submission to logout
+// invalidates the session and redirects to the home page
+export async function logout(): Promise<{ error: string } | void> {
+  const { session } = await validateRequest();
+  if (!session) {
+    return {
+      error: "No session found",
+    };
+  }
+
+  await lucia.invalidateSession(session.id);
+  const sessionCookie = lucia.createBlankSessionCookie();
+  cookies().set(
+    sessionCookie.name,
+    sessionCookie.value,
+    sessionCookie.attributes
+  );
+  return redirect("/");
+}
+
+async function generateEmailVerificationCode(
+  userId: string,
+  email: string
+): Promise<string> {
+  await prisma.emailVerification.deleteMany({
+    where: {
+      userId: userId,
+    },
+  });
+
+  const code = generateRandomString(6, alphabet("0-9"));
+  await prisma.emailVerification.create({
+    data: {
+      userId: userId,
+      email: email,
+      code: code,
+      expiresAt: createDate(new TimeSpan(10, "m")),
+    },
+  });
+  return code;
+}
+
+export async function verifyEmail(
+  _: any,
+  formData: FormData
+): Promise<{ error: string } | void> {
+  const code = formData.get("code");
+
+  if (typeof code !== "string" || code.length !== 6) {
+    return {
+      error: "Invalid code",
+    };
+  }
+
+  const { user } = await validateRequest();
+
+  if (!user) {
+    return redirect("/login");
+  }
+
+  const verifyCode = await prisma.$transaction(async (prisma) => {
+    const item = await prisma.emailVerification.findFirst({
+      where: {
+        userId: user.id,
+      },
+    });
+    if (item) {
+      await prisma.emailVerification.delete({
+        where: {
+          id: item.id,
+        },
+      });
+    }
+
+    return item;
+  });
+
+  if (!verifyCode || verifyCode.code !== code) {
+    return {
+      error: "Invalid verification code",
+    };
+  }
+
+  if (!isWithinExpirationDate(verifyCode.expiresAt)) {
+    return {
+      error: "Verification code expired",
+    };
+  }
+
+  if (verifyCode.email !== user.email) {
+    return {
+      error: "Email does not match",
+    };
+  }
+
+  await lucia.invalidateUserSessions(user.id);
+  await prisma.user.update({
+    where: {
+      id: user.id,
+    },
+    data: {
+      emailVerified: true,
+    },
+  });
+
+  const session = await lucia.createSession(user.id, {});
+  const sessionCookie = lucia.createSessionCookie(session.id);
+  cookies().set(
+    sessionCookie.name,
+    sessionCookie.value,
+    sessionCookie.attributes
+  );
+  redirect("/dashboard");
 }

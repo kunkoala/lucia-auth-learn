@@ -13,11 +13,69 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// user model
 model User {
   id       String    @id
+  username String    @unique
   email    String    @unique
   password_hash   String
+  createdAt DateTime @default(now())
+  lastLogin DateTime?
+  posts Posts[]
+  comments Comments[]
   sessions Session[]
+  emailVerified Boolean @default(false)
+}
+
+model emailVerification {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  email    String  @unique
+  code     String
+  expiresAt DateTime
+}
+
+// post model
+model Posts {
+  id        String   @id
+  userId    String
+  title     String
+  content   String
+  categories Categories[]
+  tags      PostTags[]
+  comments  Comments[]
+  createdAt DateTime @default(now())
+  user      User     @relation(references: [id], fields: [userId], onDelete: Cascade)
+}
+
+model Categories {
+  id        String   @id
+  name      String
+  posts     Posts[]
+}
+
+model Tags {
+  id        String   @id
+  name      String
+  posts     PostTags[]
+}
+
+model PostTags {
+  id        String   @id
+  postId    String
+  tagId     String
+  post      Posts    @relation(references: [id], fields: [postId], onDelete: Cascade)
+  tag       Tags     @relation(references: [id], fields: [tagId], onDelete: Cascade)
+}
+
+model Comments {
+  id        String   @id
+  postId    String
+  userId    String
+  content   String
+  createdAt DateTime @default(now())
+  post      Posts    @relation(references: [id], fields: [postId], onDelete: Cascade)
+  user      User     @relation(references: [id], fields: [userId], onDelete: Cascade)
 }
 
 model Session {

@@ -2,7 +2,7 @@ import { cookies } from "next/headers";
 import { cache } from "react";
 
 import { type Session, type User } from "lucia";
-import { lucia } from "@/lib/auth/auth";
+import { lucia } from "@/lib/auth/index";
 
 export const uncachedValidateRequest = async (): Promise<
   { user: User; session: Session } | { user: null; session: null }
