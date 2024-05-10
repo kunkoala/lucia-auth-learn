@@ -2,7 +2,7 @@ import { type TransportOptions, createTransport } from "nodemailer";
 import { env } from "process";
 import { EMAIL_SENDER } from "../constants";
 import { render } from "@react-email/render";
-import { EmailVerification } from "./template/email";
+import { EmailVerification } from "./template/email-verification";
 
 const smtpConfig = {
   host: env.SMTP_HOST,
