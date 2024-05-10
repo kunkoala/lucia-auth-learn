@@ -1,6 +1,6 @@
 export const APP_TITLE = "Writicle";
 export const DATABASE_PREFIX = "acme";
-// export const EMAIL_SENDER = '"Acme" <noreply@acme.com>';
+export const EMAIL_SENDER = '"Writicle" <noreply@azharfr.me>';
 
 export enum Paths {
   Home = "/",
