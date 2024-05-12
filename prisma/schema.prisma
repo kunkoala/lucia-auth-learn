@@ -41,6 +41,8 @@ model Posts {
   userId    String
   title     String
   content   String
+  slug     String
+  imageUrl String
   categories Categories[]
   tags      PostTags[]
   comments  Comments[]

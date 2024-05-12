@@ -249,3 +249,7 @@ export async function verifyEmail(
   );
   redirect("/dashboard");
 }
+
+// TODO: Reset Password
+// TODO: Finish Sending Email (low priority)
+// TODO: Forgot Password
